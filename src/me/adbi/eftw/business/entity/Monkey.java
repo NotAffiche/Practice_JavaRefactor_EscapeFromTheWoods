@@ -17,7 +17,7 @@ public final class Monkey {
     //endregion
 
     //region GET&SET
-    private int getMonkeyId() { return _monkeyId; }
+    public int getMonkeyId() { return _monkeyId; }
     private void setMonkeyId(int id) { _monkeyId = id; }
     public String getName() { return _name; }
     private void setName(String name) { _name = name; }

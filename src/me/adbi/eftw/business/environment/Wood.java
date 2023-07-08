@@ -4,8 +4,16 @@ import me.adbi.eftw.business.entity.Monkey;
 import me.adbi.eftw.business.entity.Tree;
 import me.adbi.eftw.business.grid.TreeGrid;
 import me.adbi.eftw.business.grid.XYBoundary;
+import me.adbi.eftw.dataaccess.DBWriter;
+import me.adbi.eftw.dataaccess.dao.DBMonkeyRecord;
 import me.adbi.eftw.dataaccess.dao.DBWoodRecord;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map.Entry;
 
 import java.util.*;
@@ -13,21 +21,20 @@ import java.util.*;
 final class Wood {
 
     //region CTOR
-    public Wood(int woodID, List<Tree> trees, Map map, String path /*, DBwriter db*/) {
+    public Wood(int woodID, List<Tree> trees, Map map, String path, DBWriter db) {
         this.woodID = woodID;
         this.trees = trees;
         this.monkeys = new ArrayList<Monkey>();
         this.map = map;
         this.path = path;
-        //this.db = db;
+        this.db = db;
     }
     //endregion
 
     //region ATTRIB
     private static final int DRAWING_FACTOR = 8;
     private String path;
-    //TODO: fix dbwriter
-    //private DBwriter db;
+    private DBWriter db;
     private Random r = new Random(1);
     private final int woodID;
     private List<Tree> trees;
@@ -51,7 +58,58 @@ final class Wood {
         for (Monkey m : monkeys) {
             routes.add(EscapeMonkey(m, map));
         }
-        WriteEscaperoutesToBitmap(routes);
+        writeEscapeRoutesToBitmap(routes);
+    }
+
+    private void writeRouteToDB(Monkey monkey, List<Tree> route)
+    {
+        System.out.println(String.format("%d:write db routes %d, %s start", woodID, woodID, monkey.getName()));
+        List<DBMonkeyRecord> records = new ArrayList<>();
+        for (int j = 0; j < route.size(); j++)
+        {
+            records.add(new DBMonkeyRecord(monkey.getMonkeyId(), monkey.getName(), woodID, j, route.get(j).getTreeId(), route.get(j).getX(), route.get(j).getY()));
+        }
+        //await db.AsyncWriteMonkeyRecordsMSSQL(records);//old sql serv
+        //await db.AsyncWriteMonkeyRecordsMongoDB(records);//new mongodb
+        //TODO: Fix db
+        System.out.println(String.format("%d:write db routes %d, %s end", woodID, woodID, monkey.getName()));
+    }
+    public void writeEscapeRoutesToBitmap(List<List<Tree>> routes) {
+        System.out.println(String.format("%d:write bitmap routes %d start", woodID, woodID));
+        Color[] cvalues = new Color[] { Color.RED, Color.YELLOW, Color.BLUE, Color.CYAN, Color.GREEN };
+        int drawingFactor = 10; // Adjust this value as per your requirement
+        BufferedImage bm = new BufferedImage((map.getMaxX() - map.getMinX()) * drawingFactor, (map.getMaxY() - map.getMinY()) * drawingFactor, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bm.createGraphics();
+        int delta = drawingFactor / 2;
+        Stroke stroke = new BasicStroke(1);
+        g.setStroke(stroke);
+        for (Tree t : trees) {
+            g.setColor(Color.GREEN);
+            g.drawOval(t.getX() * drawingFactor, t.getY() * drawingFactor, drawingFactor, drawingFactor);
+        }
+        int colorN = 0;
+        for (List<Tree> route : routes) {
+            int p1x = route.get(0).getX() * drawingFactor + delta;
+            int p1y = route.get(0).getY() * drawingFactor + delta;
+            Color color = cvalues[colorN % cvalues.length];
+            g.setColor(color);
+            g.drawOval(p1x - delta, p1y - delta, drawingFactor, drawingFactor);
+            g.fillOval(p1x - delta, p1y - delta, drawingFactor, drawingFactor);
+            for (int i = 1; i < route.size(); i++) {
+                g.drawLine(p1x, p1y, route.get(i).getX() * drawingFactor + delta, route.get(i).getY() * drawingFactor + delta);
+                p1x = route.get(i).getX() * drawingFactor + delta;
+                p1y = route.get(i).getY() * drawingFactor + delta;
+            }
+            colorN++;
+        }
+        g.dispose();
+        try {
+            File output = new File(path, woodID + "_escapeRoutes.jpg");
+            ImageIO.write(bm, "jpg", output);
+            System.out.println(String.format("%d:write bitmap routes %d end", woodID, woodID));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void WriteWoodToDB() {
@@ -100,7 +158,7 @@ final class Wood {
             double distanceToBorder = Collections.min(distance);
             if ((distanceToMonkey.size() == 0) || (distanceToBorder < distanceToMonkey.firstKey()))
             {
-                WriteRouteToDB(monkey, route);
+                writeRouteToDB(monkey, route);
                 System.out.println(String.format("%d:end %d, %s", woodID, woodID, monkey.getName()));
                 return route;
             }
