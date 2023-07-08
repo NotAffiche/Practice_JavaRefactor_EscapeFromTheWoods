@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-final class WoodBuilder {
-    private static Wood getWood(int size, Map map, String path, DBWriter db) {
+public final class WoodBuilder {
+    public static Wood getWood(int size, Map map, String path, DBWriter db) {
         Random r = new Random(100); // Random r = new Random(100);
         List<Tree> trees = new ArrayList<>();
         int n = 0;

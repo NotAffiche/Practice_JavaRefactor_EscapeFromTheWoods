@@ -18,7 +18,7 @@ import java.util.Map.Entry;
 
 import java.util.*;
 
-final class Wood {
+public final class Wood {
 
     //region CTOR
     public Wood(int woodID, List<Tree> trees, Map map, String path, DBWriter db) {
@@ -43,7 +43,7 @@ final class Wood {
     //endregion
 
     //region METHODS
-    public void PlaceMonkey(String monkeyName, int monkeyID) {
+    public void placeMonkey(String monkeyName, int monkeyID) {
         int treeNr;
         do {
             treeNr = r.nextInt(trees.size() - 1);
@@ -53,10 +53,10 @@ final class Wood {
         trees.get(treeNr).setHasMonkey(true);
         System.out.println(m.getName() + " placed on x: " + trees.get(treeNr).getY() + ", y: " + trees.get(treeNr).getY());
     }
-    public void Escape(Map map) {
+    public void escape(Map map) {
         List<List<Tree>> routes = new ArrayList<>();
         for (Monkey m : monkeys) {
-            routes.add(EscapeMonkey(m, map));
+            routes.add(escapeMonkey(m, map));
         }
         writeEscapeRoutesToBitmap(routes);
     }
@@ -77,28 +77,27 @@ final class Wood {
     public void writeEscapeRoutesToBitmap(List<List<Tree>> routes) {
         System.out.println(String.format("%d:write bitmap routes %d start", woodID, woodID));
         Color[] cvalues = new Color[] { Color.RED, Color.YELLOW, Color.BLUE, Color.CYAN, Color.GREEN };
-        int drawingFactor = 10; // Adjust this value as per your requirement
-        BufferedImage bm = new BufferedImage((map.getMaxX() - map.getMinX()) * drawingFactor, (map.getMaxY() - map.getMinY()) * drawingFactor, BufferedImage.TYPE_INT_RGB);
+        BufferedImage bm = new BufferedImage((map.getMaxX() - map.getMinX()) * DRAWING_FACTOR, (map.getMaxY() - map.getMinY()) * DRAWING_FACTOR, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = bm.createGraphics();
-        int delta = drawingFactor / 2;
+        int delta = DRAWING_FACTOR / 2;
         Stroke stroke = new BasicStroke(1);
         g.setStroke(stroke);
         for (Tree t : trees) {
             g.setColor(Color.GREEN);
-            g.drawOval(t.getX() * drawingFactor, t.getY() * drawingFactor, drawingFactor, drawingFactor);
+            g.drawOval(t.getX() * DRAWING_FACTOR, t.getY() * DRAWING_FACTOR, DRAWING_FACTOR, DRAWING_FACTOR);
         }
         int colorN = 0;
         for (List<Tree> route : routes) {
-            int p1x = route.get(0).getX() * drawingFactor + delta;
-            int p1y = route.get(0).getY() * drawingFactor + delta;
+            int p1x = route.get(0).getX() * DRAWING_FACTOR + delta;
+            int p1y = route.get(0).getY() * DRAWING_FACTOR + delta;
             Color color = cvalues[colorN % cvalues.length];
             g.setColor(color);
-            g.drawOval(p1x - delta, p1y - delta, drawingFactor, drawingFactor);
-            g.fillOval(p1x - delta, p1y - delta, drawingFactor, drawingFactor);
+            g.drawOval(p1x - delta, p1y - delta, DRAWING_FACTOR, DRAWING_FACTOR);
+            g.fillOval(p1x - delta, p1y - delta, DRAWING_FACTOR, DRAWING_FACTOR);
             for (int i = 1; i < route.size(); i++) {
-                g.drawLine(p1x, p1y, route.get(i).getX() * drawingFactor + delta, route.get(i).getY() * drawingFactor + delta);
-                p1x = route.get(i).getX() * drawingFactor + delta;
-                p1y = route.get(i).getY() * drawingFactor + delta;
+                g.drawLine(p1x, p1y, route.get(i).getX() * DRAWING_FACTOR + delta, route.get(i).getY() * DRAWING_FACTOR + delta);
+                p1x = route.get(i).getX() * DRAWING_FACTOR + delta;
+                p1y = route.get(i).getY() * DRAWING_FACTOR + delta;
             }
             colorN++;
         }
@@ -112,7 +111,7 @@ final class Wood {
         }
     }
 
-    public void WriteWoodToDB() {
+    public void writeWoodToDB() {
         System.out.println(String.format("%d:write db wood %d start", woodID, woodID));
         List<DBWoodRecord> records = new ArrayList<>();
         for (Tree t : trees) {
@@ -122,7 +121,7 @@ final class Wood {
         //await db.AsyncWriteWoodRecordsMongoDB(records);//new mongodb
         System.out.println(String.format("%d:write db wood %d end", woodID, woodID));
     }
-    public List<Tree> EscapeMonkey(Monkey monkey, Map map) {
+    public List<Tree> escapeMonkey(Monkey monkey, Map map) {
         System.out.println(String.format("%d:start %d, %s", woodID, woodID, monkey.getName()));
         HashSet<Integer> visited = new HashSet<Integer>();
         List<Tree> route = new ArrayList<Tree>();
