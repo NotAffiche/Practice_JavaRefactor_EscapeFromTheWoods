@@ -1,9 +1,9 @@
 package me.adbi.eftw.business.environment;
 
-public final class Map {
+public final class WoodMap {
 
     //region CTOR
-    public Map(int minX, int maxX, int minY, int maxY) {
+    public WoodMap(int minX, int maxX, int minY, int maxY) {
         setMinX(minX);
         setMaxX(maxX);
         setMinY(minY);

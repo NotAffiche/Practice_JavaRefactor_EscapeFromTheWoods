@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public final class Wood {
 
     //region CTOR
-    public Wood(int woodID, List<Tree> trees, Map map, String path, DBWriter db) {
+    public Wood(int woodID, List<Tree> trees, WoodMap map, String path, DBWriter db) {
         this.woodID = woodID;
         this.trees = trees;
         this.monkeys = new ArrayList<Monkey>();
@@ -39,7 +40,7 @@ public final class Wood {
     private final int woodID;
     private List<Tree> trees;
     private List<Monkey> monkeys;
-    private Map map;
+    private WoodMap map;
     //endregion
 
     //region METHODS
@@ -53,7 +54,7 @@ public final class Wood {
         trees.get(treeNr).setHasMonkey(true);
         System.out.println(m.getName() + " placed on x: " + trees.get(treeNr).getY() + ", y: " + trees.get(treeNr).getY());
     }
-    public void escape(Map map) {
+    public void escape(WoodMap map) {
         List<List<Tree>> routes = new ArrayList<>();
         for (Monkey m : monkeys) {
             routes.add(escapeMonkey(m, map));
@@ -76,7 +77,7 @@ public final class Wood {
     }
     public void writeEscapeRoutesToBitmap(List<List<Tree>> routes) {
         System.out.println(String.format("%d:write bitmap routes %d start", woodID, woodID));
-        Color[] cvalues = new Color[] { Color.RED, Color.YELLOW, Color.BLUE, Color.CYAN, Color.GREEN };
+        Color[] cvalues = new Color[] { Color.RED, Color.YELLOW, Color.BLUE, Color.CYAN, Color.MAGENTA };
         BufferedImage bm = new BufferedImage((map.getMaxX() - map.getMinX()) * DRAWING_FACTOR, (map.getMaxY() - map.getMinY()) * DRAWING_FACTOR, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = bm.createGraphics();
         int delta = DRAWING_FACTOR / 2;
@@ -111,6 +112,7 @@ public final class Wood {
         }
     }
 
+
     public void writeWoodToDB() {
         System.out.println(String.format("%d:write db wood %d start", woodID, woodID));
         List<DBWoodRecord> records = new ArrayList<>();
@@ -121,7 +123,7 @@ public final class Wood {
         //await db.AsyncWriteWoodRecordsMongoDB(records);//new mongodb
         System.out.println(String.format("%d:write db wood %d end", woodID, woodID));
     }
-    public List<Tree> escapeMonkey(Monkey monkey, Map map) {
+    public List<Tree> escapeMonkey(Monkey monkey, WoodMap map) {
         System.out.println(String.format("%d:start %d, %s", woodID, woodID, monkey.getName()));
         HashSet<Integer> visited = new HashSet<Integer>();
         List<Tree> route = new ArrayList<Tree>();
@@ -169,6 +171,23 @@ public final class Wood {
             monkey.setTree(firstEntryValue.get(0));
         }
         while (true);
+    }
+    //endregion
+
+    //region METHODS ASYNC
+    public CompletableFuture<List<Tree>> escapeAsync(WoodMap map) {
+        return CompletableFuture.supplyAsync(() -> {
+            escape(map);
+            return null;
+        });
+    }
+    public CompletableFuture<Void> writeEscapeRoutesToBitmapAsync(List<List<Tree>> routes) {
+        return CompletableFuture.runAsync(() -> writeEscapeRoutesToBitmap(routes));
+    }
+
+
+    public CompletableFuture<Void> writeWoodToDBAsync() {
+        return CompletableFuture.runAsync(this::writeWoodToDB);
     }
     //endregion
 
