@@ -1,9 +1,9 @@
 package me.adbi.eftw.business.entity;
 
-final class Monkey {
+public final class Monkey {
 
     //region CTOR
-    private Monkey(int monkeyId, String name, Tree tree) {
+    public Monkey(int monkeyId, String name, Tree tree) {
         setMonkeyId(monkeyId);
         setName(name);
         setTree(tree);
@@ -19,9 +19,9 @@ final class Monkey {
     //region GET&SET
     private int getMonkeyId() { return _monkeyId; }
     private void setMonkeyId(int id) { _monkeyId = id; }
-    private String getName() { return _name; }
+    public String getName() { return _name; }
     private void setName(String name) { _name = name; }
-    private Tree getTree() { return _tree; }
-    private void setTree(Tree tree) { _tree = tree; }
+    public Tree getTree() { return _tree; }
+    public void setTree(Tree tree) { _tree = tree; }
     //endregion
 }

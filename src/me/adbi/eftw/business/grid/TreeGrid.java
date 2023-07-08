@@ -2,12 +2,33 @@ package me.adbi.eftw.business.grid;
 
 import me.adbi.eftw.business.entity.Tree;
 
+import java.util.ArrayList;
 import java.util.List;
 
-final class TreeGrid {
+public final class TreeGrid {
 
     //region CTOR
+    private TreeGrid(int delta, XYBoundary xyBoundary) {
+        setDelta(delta);
+        setXyBoundary(xyBoundary);
+        setNX((int)(getXyBoundary().getDX() / delta) + 1);
+        setNY((int)(getXyBoundary().getDY() / delta) + 1);
 
+        setTrees(new ArrayList[getNX()][getNY()]);
+        for (int i = 0; i < getNX(); i++) {
+            getTrees()[i] = new ArrayList[getNY()];
+            for (int j = 0; j < getNY(); j++) {
+                getTrees()[i][j] = new ArrayList<>();
+            }
+        }
+    }
+
+    public TreeGrid(int delta, XYBoundary xyb, List<Tree> data) {
+        this(delta, xyb);
+        for (Tree t : data) {
+            AddTree(t);
+        }
+    }
     //endregion
 
     //region ATTRIB
@@ -17,27 +38,27 @@ final class TreeGrid {
     //endregion
 
     //region GET&SET
-    private int getDelta() { return _delta; }
+    public int getDelta() { return _delta; }
     private void setDelta(int delta) {
         this._delta = delta;
     }
 
-    private int getNX() { return _nx; }
+    public int getNX() { return _nx; }
     private void setNX(int nx) {
         this._nx = nx;
     }
 
-    private int getNY() { return _ny; }
+    public int getNY() { return _ny; }
     private void setNY(int ny) {
         this._ny = ny;
     }
 
-    private XYBoundary getXyBoundary() { return _xyBoundary; }
+    public XYBoundary getXyBoundary() { return _xyBoundary; }
     private void setXyBoundary(XYBoundary xyBoundary) {
         this._xyBoundary = xyBoundary;
     }
 
-    private List<Tree>[][] getTrees() { return _trees; }
+    public List<Tree>[][] getTrees() { return _trees; }
     private void setTrees(List<Tree>[][] trees) {
         this._trees = trees;
     }

@@ -19,14 +19,14 @@ public final class Tree {
     //endregion
 
     //region GET&SET
-    private int getTreeId() { return _treeId; }
+    public int getTreeId() { return _treeId; }
     private void setTreeId(int treeId) { _treeId = treeId; }
     public int getX() { return _x; }
     private void setX(int x) { _x = x; }
     public int getY() { return _y; }
     private void setY(int y) { _y = y; }
-    private boolean hasMonkey() { return _hasMonkey; }
-    private void setHasMonkey(boolean has) { _hasMonkey = has; }
+    public boolean hasMonkey() { return _hasMonkey; }
+    public void setHasMonkey(boolean has) { _hasMonkey = has; }
     //endregion
 
     //region OVERRIDES

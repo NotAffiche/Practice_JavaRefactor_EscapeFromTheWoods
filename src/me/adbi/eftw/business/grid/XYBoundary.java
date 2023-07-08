@@ -1,9 +1,9 @@
 package me.adbi.eftw.business.grid;
 
-final class XYBoundary {
+public final class XYBoundary {
 
     //region CTOR
-    private XYBoundary(int minX, int minY, int maxX, int maxY) {
+    public XYBoundary(int minX, int minY, int maxX, int maxY) {
         setMinX(minX);
         setMinY(minY);
         setMaxX(maxX);
@@ -16,9 +16,9 @@ final class XYBoundary {
     //endregion
 
     //region GET&SET
-    int getMinX() { return _minX; }
+    public int getMinX() { return _minX; }
     private void setMinX(int x) { _minX = x; }
-    int getMinY() { return _minY; }
+    public int getMinY() { return _minY; }
     private void setMinY(int y) { _minY = y; }
     int getMaxX() { return _maxX; }
     private void setMaxX(int x) { _maxX = x; }
@@ -27,14 +27,14 @@ final class XYBoundary {
     //endregion
 
     //region METHODS
-    private int getDX() {
+    int getDX() {
         return getMaxX() - getMinX();
     }
-    private int getDY() {
+    int getDY() {
         return getMaxY() - getMinY();
     }
 
-    private boolean isWithinBounds(int x, int y){
+    public boolean isWithinBounds(int x, int y){
         if ((x<getMinX()) || (x>getMaxX()) || (y<getMinY()) || (y>getMaxY())) return false;
         return true;
     }
