@@ -33,7 +33,7 @@ public final class Wood {
     //endregion
 
     //region ATTRIB
-    private static final int DRAWING_FACTOR = 8;
+    private static final int DRAWING_FACTOR = 16;
     private String path;
     private DBWriter db;
     private Random r = new Random(1);
