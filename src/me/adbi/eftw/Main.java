@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Escape From The Woods\n");
-        String mySqlConnectionString = "def";
-        String mongoDbConnectionString = "abc";
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("=====================\n=====================");
+        System.out.println("Escape From The Woods");
+        System.out.println("=====================\n=====================\n");
+        String mySqlConnectionString = "blank";
+        String mongoDbConnectionString = "blank";
         DBWriter db = new DBWriter(mongoDbConnectionString, DBType.MONGO);
         String path = "C:\\NET\\monkeys";
 
@@ -42,65 +44,29 @@ public class Main {
         w3.placeMonkey("Kobe", IDGenerator.getMonkeyID());
         w3.placeMonkey("Kendra", IDGenerator.getMonkeyID());
 
+        List<Wood> woodList = new ArrayList<>() {{add(w1); add(w2); add(w3);}};
+
         System.out.println("Start");
         //timer
         long startTime = System.nanoTime();
 
-        ExecutorService executor = Executors.newFixedThreadPool(3);
-
-        CompletableFuture<List<Tree>> escapeFuture1 = w1.escapeAsync(m1);
-        CompletableFuture<List<Tree>> escapeFuture2 = w2.escapeAsync(m2);
-        CompletableFuture<List<Tree>> escapeFuture3 = w3.escapeAsync(m3);
-
-        try {
-            CompletableFuture<Void> escapeAndBitmapFuture1 = escapeFuture1.thenComposeAsync(routes -> {
-                if (routes != null) {
-                    CompletableFuture<Void> bitmapFuture = w1.writeEscapeRoutesToBitmapAsync(Collections.singletonList(routes));
-                    return CompletableFuture.allOf(escapeFuture1, bitmapFuture);
-                } else {
-                    return CompletableFuture.completedFuture(null);
-                }
-            }, executor);
-
-            CompletableFuture<Void> escapeAndBitmapFuture2 = escapeFuture2.thenComposeAsync(routes -> {
-                if (routes != null) {
-                    CompletableFuture<Void> bitmapFuture = w2.writeEscapeRoutesToBitmapAsync(Collections.singletonList(routes));
-                    return CompletableFuture.allOf(escapeFuture2, bitmapFuture);
-                } else {
-                    return CompletableFuture.completedFuture(null);
-                }
-            }, executor);
-
-            CompletableFuture<Void> escapeAndBitmapFuture3 = escapeFuture3.thenComposeAsync(routes -> {
-                if (routes != null) {
-                    CompletableFuture<Void> bitmapFuture = w3.writeEscapeRoutesToBitmapAsync(Collections.singletonList(routes));
-                    return CompletableFuture.allOf(escapeFuture3, bitmapFuture);
-                } else {
-                    return CompletableFuture.completedFuture(null);
-                }
-            }, executor);
-
-            CompletableFuture<Void> woodDbFuture1 = w1.writeWoodToDBAsync();
-            CompletableFuture<Void> woodDbFuture2 = w2.writeWoodToDBAsync();
-            CompletableFuture<Void> woodDbFuture3 = w3.writeWoodToDBAsync();
-
-            CompletableFuture.allOf(escapeAndBitmapFuture1, escapeAndBitmapFuture2, escapeAndBitmapFuture3).get(); // Wait for escape and bitmap tasks for each wood
-            CompletableFuture.allOf(woodDbFuture1, woodDbFuture2, woodDbFuture3).get(); // Wait for the wood DB writing to complete
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+        //multithreading
+        List<Thread> threads = new ArrayList<>();
+        for (Wood w : woodList) {
+            threads.add(new Thread(w, "THREAD-Wood#" + w.getWoodID()));
+        }
+        for (Thread t : threads) {
+            System.out.printf("Starting thread: %s\n", t.getName());
+            t.start();
+            t.join();
         }
 
-
-        executor.shutdown();
-
+        //time+program end
         long endTime = System.nanoTime();
         long elapsedTime = endTime - startTime;
-
-        // Convert elapsed time to milliseconds
+        // nano time to milliseconds
         double elapsedTimeMs = elapsedTime / 1_000_000.0;
-
         System.out.println("Elapsed time: " + elapsedTimeMs + " ms");
-
         System.out.println("End");
     }
 }

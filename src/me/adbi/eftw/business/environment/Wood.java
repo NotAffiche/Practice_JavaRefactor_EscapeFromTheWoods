@@ -17,15 +17,14 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
-public final class Wood {
+public final class Wood implements Runnable {
 
     //region CTOR
     public Wood(int woodID, List<Tree> trees, WoodMap map, String path, DBWriter db) {
         this.woodID = woodID;
         this.trees = trees;
-        this.monkeys = new ArrayList<Monkey>();
+        this.monkeys = new ArrayList<>();
         this.map = map;
         this.path = path;
         this.db = db;
@@ -41,6 +40,12 @@ public final class Wood {
     private List<Tree> trees;
     private List<Monkey> monkeys;
     private WoodMap map;
+    //endregion
+
+    //region PROPS
+    public int getWoodID() {
+        return woodID;
+    }
     //endregion
 
     //region METHODS
@@ -62,8 +67,7 @@ public final class Wood {
         writeEscapeRoutesToBitmap(routes);
     }
 
-    private void writeRouteToDB(Monkey monkey, List<Tree> route)
-    {
+    private void writeRouteToDB(Monkey monkey, List<Tree> route) {
         System.out.println(String.format("%d:write db routes %d, %s start", woodID, woodID, monkey.getName()));
         List<DBMonkeyRecord> records = new ArrayList<>();
         for (int j = 0; j < route.size(); j++)
@@ -74,6 +78,16 @@ public final class Wood {
         //await db.AsyncWriteMonkeyRecordsMongoDB(records);//new mongodb
         //TODO: Fix db
         System.out.println(String.format("%d:write db routes %d, %s end", woodID, woodID, monkey.getName()));
+    }
+    public void writeWoodToDB() {
+        System.out.printf("%d:write db wood %d start%n", woodID, woodID);
+        List<DBWoodRecord> records = new ArrayList<>();
+        for (Tree t : trees) {
+            records.add(new DBWoodRecord(woodID, t.getTreeId(), t.getX(), t.getY()));
+        }
+        //await db.AsyncWriteWoodRecordsMSSQL(records);//old sql serv
+        //await db.AsyncWriteWoodRecordsMongoDB(records);//new mongodb
+        System.out.printf("%d:write db wood %d end%n", woodID, woodID);
     }
     public void writeEscapeRoutesToBitmap(List<List<Tree>> routes) {
         System.out.println(String.format("%d:write bitmap routes %d start", woodID, woodID));
@@ -106,25 +120,13 @@ public final class Wood {
         try {
             File output = new File(path, woodID + "_escapeRoutes.jpg");
             ImageIO.write(bm, "jpg", output);
-            System.out.println(String.format("%d:write bitmap routes %d end", woodID, woodID));
+            System.out.printf("%d:write bitmap routes %d end%n", woodID, woodID);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-    public void writeWoodToDB() {
-        System.out.println(String.format("%d:write db wood %d start", woodID, woodID));
-        List<DBWoodRecord> records = new ArrayList<>();
-        for (Tree t : trees) {
-            records.add(new DBWoodRecord(woodID, t.getTreeId(), t.getX(), t.getY()));
-        }
-        //await db.AsyncWriteWoodRecordsMSSQL(records);//old sql serv
-        //await db.AsyncWriteWoodRecordsMongoDB(records);//new mongodb
-        System.out.println(String.format("%d:write db wood %d end", woodID, woodID));
-    }
     public List<Tree> escapeMonkey(Monkey monkey, WoodMap map) {
-        System.out.println(String.format("%d:start %d, %s", woodID, woodID, monkey.getName()));
+        System.out.printf("%d:start %d, %s%n", woodID, woodID, monkey.getName());
         HashSet<Integer> visited = new HashSet<Integer>();
         List<Tree> route = new ArrayList<Tree>();
         route.add(monkey.getTree());
@@ -175,19 +177,17 @@ public final class Wood {
     //endregion
 
     //region METHODS ASYNC
-    public CompletableFuture<List<Tree>> escapeAsync(WoodMap map) {
-        return CompletableFuture.supplyAsync(() -> {
-            escape(map);
-            return null;
-        });
-    }
-    public CompletableFuture<Void> writeEscapeRoutesToBitmapAsync(List<List<Tree>> routes) {
-        return CompletableFuture.runAsync(() -> writeEscapeRoutesToBitmap(routes));
-    }
+    @Override
+    public void run() {
+        System.out.println("!! Starting wood async run #ID: " + woodID);
+        System.out.println("!! Starting wood db write async run #ID: " + woodID);
+        writeWoodToDB();
+        System.out.println("!! Ending wood escape async run #ID: " + woodID);
+        System.out.println("!! Finished wood escape async run #ID: " + woodID);
+        escape(map);
+        System.out.println("!! Finished wood escape async run #ID: " + woodID);
+        System.out.println("!! Ending wood async run #ID: " + woodID);
 
-
-    public CompletableFuture<Void> writeWoodToDBAsync() {
-        return CompletableFuture.runAsync(this::writeWoodToDB);
     }
     //endregion
 
